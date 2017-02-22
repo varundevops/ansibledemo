@@ -1,0 +1,23 @@
+- hosts: node001
+  tasks:
+   - name: Install Nginx
+     yum: name=nginx state=latest
+     notify:
+      - Start Nginx
+
+   - name: Upload a index.php file
+     copy: src=files/index.php dest=/usr/share/nginx/html mode=0644
+     register: php
+     ignore_errors: True
+
+   - name: Remove index.html from host
+     commad: rm /usr/share/nginx/html/index.html
+     when: php|success
+
+   - name: Upload default index.html to host
+     copy: src=files/index.html dest=/usr/share/nginx/html/ mode=0644
+     when: php|failed
+
+  handlers:
+   - name: Start Nginx
+     service: name=nginx state=started

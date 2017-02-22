@@ -1,0 +1,23 @@
+- hosts: node001
+  vars:
+   - docroot: /var/www/varun.com/public
+  tasks:
+   - name: Install Nginx
+     yum: name=nginx state=latest
+     #register: InstallStatus
+     #when: InstallStatus|success
+     register: Installed
+     notify:
+      - Start Nginx
+
+   - name: Create Web Root
+     when: Installed|success
+     file: dest=/var/www/varun.com/public mode=775 state=directory owner=root group=root
+     notify:
+      - Reload Nginx
+  handlers:
+  - name: Start Nginx
+    service: name=nginx state=started
+
+  - name: Reload Nginx
+    service: name=nginx state=reloaded
